@@ -4,6 +4,11 @@
   "description": "Data models, parser, serializer, validator, and CLI for the FIDO Credential Exchange Format (CXF) v1.0",
   "type": "module",
   "license": "MIT",
+  "author": "Yusuf Mohammed <yusufmoh006p@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/USERNAME/cxf-kit.git"
+  },
   "engines": {
     "node": ">=18"
   },
