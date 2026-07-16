@@ -4,3 +4,4 @@ export * from "./diagnostics.js";
 export * from "./archive.js";
 export * from "./parse.js";
 export * from "./serialize.js";
+export * from "./validate.js";

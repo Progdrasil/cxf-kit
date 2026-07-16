@@ -94,6 +94,11 @@ Further example nonconformance found while building the round-trip suite: the dr
 credential's `expiryDate` EditableField carries `"extensions": []` — present-but-empty, violating
 both the CDDL's `[ + Extension ]` and the exporter omission rule (§3/§6). This forced the
 serializer's default mode to be strictly preserving; normalization is opt-in.
+Two more, found while calibrating the validator: Appendix A uses bare `"CA"` for a
+`subdivision-code` (ISO 3166-2 requires the `US-CA` form) and `"WPA2"` for a
+`wifi-network-security-type` (the enum value is `wpa2-personal`). Consequence: the validator
+treats subdivision-code format and wifi-security enum mismatches as **warnings** — as errors,
+the spec's own example would fail validation, and real exports imitate the example.
 
 ## 12. ⚠ Fetch-summary hazard (process note, not spec)
 Two independent LLM summaries of the spec both mis-stated `SharingAccessor`'s fields
