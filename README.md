@@ -79,9 +79,13 @@ example, a synthetic all-17-types fixture, and the ZIP archive form.
 ## CLI
 
 `cxf validate <file>` (exit 0 conforms / 1 errors / 2 unusable) and
-`cxf inspect <file>` (concealed values and key material redacted by default;
-`--no-redact` reveals them); both take `--json`. The exit-code contract is
-enforced by tests that spawn the built CLI as a real child process.
+`cxf inspect <file>`; both take `--json`. **inspect is allowlist-based**: only
+structural metadata (types, counts, ids, config numbers) and identity fields
+(usernames, emails, titles, service ids) are ever printed — credential value
+scalars are unprintable by construction, with no reveal flag. `--redact`
+additionally hides the identity fields, leaving pure structure. The exit-code
+contract and the never-prints-secrets property are enforced by tests that
+spawn the built CLI as a real child process.
 Real output against the spec's own example payload:
 
 ```
@@ -137,13 +141,17 @@ test/fixtures/spec/appendix-a.json
       wifi                1
     Items:
       - GitHub Login
-          basic-auth — username: johndoe, password: [redacted]
-          totp — secret: [redacted], period: 30, digits: 6, issuer: Google, algorithm: sha256, username: jane.smith@example.com
+          basic-auth — username: johndoe
+          totp — username: jane.smith@example.com, issuer: Google, period: 30, digits: 6, algorithm: sha256
       - WebAuthn.io
-          passkey — credentialId: Y3JlZGVudGlhbElkRXhhbXBsZQ, rpId: webauthn.io, username: johndoe, userDisplayName: John Doe, userHandle: cnEzaNHWcYK3coWZjvoaV1Hj9gnI12mKe2dL2HZVFlY, key: [redacted]
+          passkey — rpId: webauthn.io, username: johndoe, userDisplayName: John Doe, credentialId: Y3JlZGVudGlhbElkRXhhbXBsZQ
       - Visa Credit Card
-          credit-card — number: [redacted], fullName: John Doe, cardType: Visa, verificationNumber: [redacted], pin: [redacted], expiryDate: 2027-08, validFrom: 2024-02
-      ... (11 more items; secrets always come back "[redacted]" unless --no-redact)
+          credit-card
+      - Wifi
+          wifi — ssid: Home_Network
+      ... (10 more items; values like the password, TOTP secret, and card
+          number are not merely hidden — they are outside the allowlist and
+          cannot be printed by any flag)
 ```
 
 ## Archive form and security notes
@@ -166,6 +174,8 @@ is sniffed by magic number. Hostile input is expected:
   format, silently corrupting a secret is worse than failing.
 - **Payload integrity** — in archive mode the validator verifies each file
   payload's size and SHA-256 against its credential (`CXF2016`/`CXF2017`).
+- **Allowlist inspection** — `cxf inspect` can only print members on an
+  explicit allowlist; secret values aren't redacted, they're unreachable.
 
 ## Spec findings
 

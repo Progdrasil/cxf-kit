@@ -59,34 +59,54 @@ describe("exit code 0: conforming documents", () => {
   });
 });
 
-describe("inspect redaction", () => {
+describe("inspect allowlist and --redact", () => {
   const kitchen = join(FIXTURES, "synthetic", "kitchen-sink.json");
+  const SECRETS = [
+    "hunter2", // basic-auth password (concealed-string)
+    "JBSWY3DPEHPK3PXP", // totp secret
+    "correct horse battery staple", // generated password
+    "sk-live-123", // api-key key (concealed-string)
+    "4111111111111111", // credit-card number
+    "difference-engine", // wifi passphrase
+    "cGtjczgtZGVyLWJ5dGVz", // passkey private key
+    "cGtjczgtc3NoLWtleQ", // ssh private key
+    "GEZDGNBVGY3TQOJQ", // custom-fields field value
+    "1234567890", // unknown-credential string member
+    "Y3JlZFdpdGhVVg", // fido2 hmac credential
+  ];
 
-  it("redacts concealed values and secret scalars by default", () => {
-    const res = run("inspect", kitchen);
-    expect(res.status).toBe(0);
-    expect(res.stdout).toContain("[redacted]");
-    expect(res.stdout).toContain("username: ada"); // non-concealed values shown
-    expect(res.stdout).not.toContain("hunter2"); // concealed-string
-    expect(res.stdout).not.toContain("JBSWY3DPEHPK3PXP"); // totp secret
-    expect(res.stdout).not.toContain("correct horse battery staple"); // generated password
-    expect(res.stdout).not.toContain("1234567890"); // unknown-credential string member
+  it("never prints credential value scalars, in any mode (allowlist, not denylist)", () => {
+    for (const flags of [[], ["--redact"], ["--json"], ["--json", "--redact"]]) {
+      const res = run("inspect", kitchen, ...flags);
+      expect(res.status).toBe(0);
+      for (const secret of SECRETS) {
+        expect(res.stdout, `flags=${flags.join(" ")} leaked ${secret}`).not.toContain(secret);
+      }
+    }
   });
 
-  it("--no-redact reveals them", () => {
-    const res = run("inspect", kitchen, "--no-redact");
-    expect(res.status).toBe(0);
-    expect(res.stdout).toContain("hunter2");
-    expect(res.stdout).toContain("JBSWY3DPEHPK3PXP");
-    expect(res.stdout).not.toContain("[redacted]");
+  it("shows identity and structural metadata by default", () => {
+    const out = run("inspect", kitchen).stdout;
+    expect(out).toContain("username: ada"); // identity
+    expect(out).toContain("Example Login"); // item title
+    expect(out).toContain("rpId: webauthn.io"); // identity
+    expect(out).toContain("period: 30"); // structural config
+    expect(out).toContain("cxf-kit.example/loyalty-card"); // unknown type name, no content
   });
 
-  it("--json output respects the same redaction", () => {
-    const redacted = JSON.stringify(JSON.parse(run("inspect", kitchen, "--json").stdout));
-    expect(redacted).toContain("[redacted]");
-    expect(redacted).not.toContain("hunter2");
-    const revealed = JSON.stringify(JSON.parse(run("inspect", kitchen, "--json", "--no-redact").stdout));
-    expect(revealed).toContain("hunter2");
+  it("--redact hides identity fields but keeps structure", () => {
+    const out = run("inspect", kitchen, "--redact").stdout;
+    expect(out).not.toContain("ada");
+    expect(out).not.toContain("Example Login");
+    expect(out).not.toContain("webauthn.io");
+    expect(out).toContain("[redacted]");
+    expect(out).toContain("basic-auth"); // types and counts survive
+    expect(out).toContain("period: 30");
+    expect(out).toContain("Items: 8");
+  });
+
+  it("the old --no-redact reveal flag no longer exists", () => {
+    expect(run("inspect", kitchen, "--no-redact").status).toBe(2);
   });
 });
 

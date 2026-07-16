@@ -12,7 +12,6 @@
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { CxfParseError } from "./diagnostics.js";
-import { isKnownCredentialType } from "./guards.js";
 import { parseCxf, type CxfDocument } from "./parse.js";
 import { validateDocument } from "./validate.js";
 import type { Collection, Header } from "./types.js";
@@ -21,11 +20,13 @@ const USAGE = `Usage: cxf <command> <file> [options]
 
 Commands:
   validate <file>   Check a CXF document or export archive for conformance.
-  inspect <file>    Summarize contents. Concealed values are redacted.
+  inspect <file>    Summarize structure. Credential values are never printed.
 
 Options:
   --json            Machine-readable output.
-  --no-redact       inspect only: reveal concealed values (default: redacted).
+  --redact          inspect only: also hide identity fields (usernames,
+                    emails, titles, service ids). Secret values are always
+                    unprintable regardless of flags.
   -h, --help        Show this help.
 
 Exit codes: 0 ok, 1 validation errors, 2 unusable input.`;
@@ -38,8 +39,7 @@ export function main(argv: string[]): number {
       allowPositionals: true,
       options: {
         json: { type: "boolean", default: false },
-        redact: { type: "boolean", default: true },
-        "no-redact": { type: "boolean", default: false },
+        redact: { type: "boolean", default: false },
         help: { type: "boolean", short: "h", default: false },
       },
     });
@@ -86,10 +86,9 @@ export function main(argv: string[]): number {
     throw e;
   }
 
-  const redact = !args.values["no-redact"];
   return command === "validate"
     ? runValidate(file, doc, args.values.json)
-    : runInspect(file, doc, args.values.json, redact);
+    : runInspect(file, doc, args.values.json, args.values.redact);
 }
 
 function runValidate(file: string, doc: CxfDocument, json: boolean): number {
@@ -131,62 +130,73 @@ function countCollections(collections: Collection[]): number {
 
 const REDACTED = "[redacted]";
 
-/** Secret scalar members by "credentialType.member"; always redacted by default. */
-const SECRET_SCALARS = new Set([
-  "generated-password.password",
-  "totp.secret",
-  "passkey.key",
-  "ssh-key.privateKey",
-]);
+/**
+ * inspect is ALLOWLIST-based: only the members named below are ever printed.
+ * Credential value scalars (passwords, secrets, keys, card numbers, field
+ * values, blobs, anything not listed) are unprintable by construction — no
+ * flag reveals them. A denylist of secrets would eventually miss one; an
+ * allowlist of safe fields can't.
+ *
+ * Identity members (usernames, emails, titles, service ids) are shown by
+ * default and hidden by --redact. Structural members (ids, counts, config
+ * numbers) are always shown.
+ */
+const IDENTITY_EF_MEMBERS: Record<string, readonly string[]> = {
+  "basic-auth": ["username"],
+  "api-key": ["username"],
+  "wifi": ["ssid"],
+};
+
+const IDENTITY_SCALARS: Record<string, readonly string[]> = {
+  "passkey": ["rpId", "username", "userDisplayName"],
+  "totp": ["username", "issuer"],
+  "file": ["name"],
+  "custom-fields": ["label"],
+  "ssh-key": ["keyComment"],
+};
+
+const STRUCTURAL_SCALARS: Record<string, readonly string[]> = {
+  "totp": ["period", "digits", "algorithm"],
+  "ssh-key": ["keyType"],
+  "file": ["id", "decryptedSize"],
+  "passkey": ["credentialId"],
+  "custom-fields": ["id"],
+};
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return v !== null && typeof v === "object" && !Array.isArray(v);
 }
 
-/**
- * Flatten a credential into displayable "member: value" pairs. Concealed
- * EditableFields and known secret scalars come back as "[redacted]" unless
- * redact is off; string members of unknown credential types are treated as
- * secret too, since we can't know better. Nested structures (fido2Extensions,
- * scope, references) are omitted rather than dumped.
- */
 function credentialView(
   cred: Record<string, unknown>,
-  redact: boolean,
+  redactIdentity: boolean,
 ): { type: string; fields: Record<string, string | number | boolean> } {
   const type = typeof cred["type"] === "string" ? cred["type"] : "(untyped)";
-  const known = isKnownCredentialType(type);
   const fields: Record<string, string | number | boolean> = {};
 
-  const addEditableField = (key: string, ef: Record<string, unknown>) => {
-    if (typeof ef["value"] !== "string") return;
-    const concealed = ef["fieldType"] === "concealed-string";
-    fields[key] = redact && concealed ? REDACTED : ef["value"];
-  };
-
-  for (const [name, value] of Object.entries(cred)) {
-    if (name === "type") continue;
-    if (isPlainObject(value) && "fieldType" in value) {
-      addEditableField(name, value);
-    } else if (name === "fields" && Array.isArray(value)) {
-      value.forEach((f, i) => {
-        if (isPlainObject(f)) {
-          addEditableField(typeof f["label"] === "string" ? f["label"] : `fields[${i}]`, f);
-        }
-      });
-    } else if (typeof value === "string") {
-      const secret = SECRET_SCALARS.has(`${type}.${name}`) || !known;
-      fields[name] = redact && secret ? REDACTED : value;
-    } else if (typeof value === "number" || typeof value === "boolean") {
-      fields[name] = value;
+  for (const member of IDENTITY_EF_MEMBERS[type] ?? []) {
+    const ef = cred[member];
+    if (isPlainObject(ef) && typeof ef["value"] === "string") {
+      fields[member] = redactIdentity ? REDACTED : ef["value"];
     }
+  }
+  for (const member of IDENTITY_SCALARS[type] ?? []) {
+    const value = cred[member];
+    if (typeof value === "string") fields[member] = redactIdentity ? REDACTED : value;
+  }
+  for (const member of STRUCTURAL_SCALARS[type] ?? []) {
+    const value = cred[member];
+    if (typeof value === "string" || typeof value === "number") fields[member] = value;
+  }
+  if (type === "custom-fields" && Array.isArray(cred["fields"])) {
+    fields["fields"] = cred["fields"].length;
   }
   return { type, fields };
 }
 
 function summarize(header: Header, doc: CxfDocument, redact: boolean) {
   return {
-    redacted: redact,
+    identityRedacted: redact,
     exporter: { rpId: header.exporterRpId, displayName: header.exporterDisplayName },
     version: header.version,
     exportedAt:
@@ -208,14 +218,14 @@ function summarize(header: Header, doc: CxfDocument, redact: boolean) {
       }
       return {
         id: a.id,
-        username: a.username,
-        email: a.email,
+        username: redact ? REDACTED : a.username,
+        email: redact ? REDACTED : a.email,
         items: Array.isArray(a.items) ? a.items.length : 0,
         collections: countCollections(Array.isArray(a.collections) ? a.collections : []),
         credentials: histogram,
         itemDetails: (Array.isArray(a.items) ? a.items : []).map((item) => ({
           id: item.id,
-          title: typeof item.title === "string" ? item.title : "(untitled)",
+          title: redact ? REDACTED : typeof item.title === "string" ? item.title : "(untitled)",
           credentials: (Array.isArray(item.credentials) ? item.credentials : []).map((c) =>
             credentialView(c as Record<string, unknown>, redact),
           ),
