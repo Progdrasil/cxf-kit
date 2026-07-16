@@ -1,0 +1,364 @@
+; CXF v1.0 CDDL Index — extracted verbatim from
+; https://fidoalliance.org/specs/cx/cxf-v1.0-ps-20250814.html (Proposed Standard, 2025-08-14)
+
+b64url = tstr
+
+Header = {
+    version: Version,
+    exporterRpId: tstr,
+    exporterDisplayName: tstr,
+    timestamp: uint .size 8,
+    accounts: [ * Account ],
+}
+
+Version = {
+    major: uint .size 1,
+    minor: uint .size 1,
+}
+
+Account = {
+    id: b64url,
+    username: tstr,
+    email: tstr,
+    ? fullName: tstr,
+    collections: [ * Collection ],
+    items: [ * Item ],
+    ? extensions: [ * Extension ] .default [],
+}
+
+Collection = {
+    id: b64url,
+    ? creationAt: uint .size 8,
+    ? modifiedAt: uint .size 8,
+    title: tstr,
+    ? subtitle: tstr,
+    items: [ * LinkedItem ],
+    ? subCollections: [ * Collection ] .default [],
+    ? extensions: [ * Extension ] .default [],
+}
+
+LinkedItem = {
+    item: b64url,
+    ? account: b64url,
+}
+
+Item = {
+    id: b64url,
+    ? creationAt: uint .size 8,
+    ? modifiedAt: uint .size 8,
+    title: tstr,
+    ? subtitle: tstr,
+    ? favorite: bool .default false,
+    ? scope: CredentialScope,
+    credentials: [ * Credential ],
+    ? tags: [ * tstr ] .default [],
+    ? extensions: [ * Extension ] .default [],
+}
+
+CredentialScope = {
+    urls: [ * uri ],
+    androidApps: [ * AndroidAppId ],
+}
+
+AndroidAppId = {
+    bundleId: tstr,
+    ? certificate: AndroidAppCertificateFingerprint,
+    ? name: tstr
+}
+
+AndroidAppCertificateFingerprint = {
+    fingerprint: b64url,
+    hashAlg: "sha256" / "sha512" / tstr,
+}
+
+Credential = $Credential .within {
+    type: CredentialType / tstr
+}
+
+$Credential /= Address
+Address = {
+    type: "address",
+    ? streetAddress: EditableField<"string">,
+    ? postalCode: EditableField<"string">,
+    ? city: EditableField<"string">,
+    ? territory: EditableField<"subdivision-code">,
+    ? country: EditableField<"country-code">,
+    ? tel: EditableField<"string">,
+}
+
+$Credential /= APIKey
+APIKey = {
+    type: "api-key",
+    ? key: EditableField<"concealed-string">,
+    ? username: EditableField<"string">,
+    ? keyType: EditableField<"string">,
+    ? url: EditableField<"string">,
+    ? validFrom: EditableField<"date">,
+    ? expiryDate: EditableField<"date">,
+}
+
+$Credential /= BasicAuth
+BasicAuth = {
+    type: "basic-auth",
+    ? username: EditableField<"string">,
+    ? password: EditableField<"concealed-string">
+}
+
+$Credential /= CreditCard
+CreditCard = {
+    type: "credit-card",
+    ? number: EditableField<"concealed-string">,
+    ? fullName: EditableField<"string">,
+    ? cardType: EditableField<"string">,
+    ? verificationNumber: EditableField<"concealed-string">,
+    ? pin: EditableField<"concealed-string">,
+    ? expiryDate: EditableField<"year-month">,
+    ? validFrom: EditableField<"year-month">,
+}
+
+$Credential /= CustomFields
+CustomFields = {
+    type: "custom-fields",
+    ? id: b64url,
+    ? label: tstr,
+    fields: [ * EditableField<FieldType> ],
+    ? extensions: [ + Extension ] .default [],
+}
+
+$Credential /= DriversLicense
+DriversLicense = {
+    type: "drivers-license",
+    ? fullName: EditableField<"string">,
+    ? birthDate: EditableField<"date">,
+    ? issueDate: EditableField<"date">,
+    ? expiryDate: EditableField<"date">,
+    ? issuingAuthority: EditableField<"string">,
+    ? territory: EditableField<"subdivision-code">,
+    ? country: EditableField<"country-code">,
+    ? licenseNumber: EditableField<"string">,
+    ? licenseClass: EditableField<"string">,
+}
+
+$Credential /= File
+File = {
+    type: "file",
+    id: b64url,
+    name: tstr,
+    decryptedSize: uint,
+    integrityHash: b64url
+}
+
+$Credential /= GeneratedPassword
+GeneratedPassword = {
+    type: "generated-password",
+    password: tstr,
+}
+
+$Credential /= IdentityDocument
+IdentityDocument = {
+    type: "identity-document",
+    ? issuingCountry: EditableField<"country-code">,
+    ? documentNumber: EditableField<"string">,
+    ? identificationNumber: EditableField<"string">,
+    ? nationality: EditableField<"string">,
+    ? fullName: EditableField<"string">,
+    ? birthDate: EditableField<"date">,
+    ? birthPlace: EditableField<"string">,
+    ? sex: EditableField<"string">,
+    ? issueDate: EditableField<"date">,
+    ? expiryDate: EditableField<"date">,
+    ? issuingAuthority: EditableField<"string">,
+}
+
+$Credential /= ItemReference
+ItemReference = {
+    type: "item-reference",
+    reference: LinkedItem,
+}
+
+$Credential /= Note
+Note = {
+    type: "note",
+    content: EditableField<"string">,
+};
+
+$Credential /= Passkey
+Passkey = {
+    type: "passkey",
+    credentialId: b64url,
+    rpId: tstr,
+    username: tstr,
+    userDisplayName: tstr,
+    userHandle: b64url,
+    key: b64url,
+    ? fido2Extensions: Fido2Extensions,
+}
+
+Fido2Extensions = {
+    ? hmacCredentials: Fido2HmacCredentials,
+    ? credBlob: b64url,
+    ? largeBlob: Fido2LargeBlob,
+    ? payments: bool,
+}
+
+Fido2HmacCredentials = {
+    algorithm: Fido2HmacCredentialAlgorithm / tstr,
+    credWithUV: b64url,
+    credWithoutUV: b64url,
+}
+
+Fido2HmacCredentialAlgorithm =
+    "hmac-sha256"
+
+Fido2LargeBlob = {
+    uncompressedSize: uint,
+    data: b64url,
+}
+
+$Credential /= Passport
+Passport = {
+    type: "passport",
+    ? issuingCountry: EditableField<"country-code">,
+    ? passportType: EditableField<"string">,
+    ? passportNumber: EditableField<"string">,
+    ? nationalIdentificationNumber: EditableField<"string">,
+    ? nationality: EditableField<"string">,
+    ? fullName: EditableField<"string">,
+    ? birthDate: EditableField<"date">,
+    ? birthPlace: EditableField<"string">,
+    ? sex: EditableField<"string">,
+    ? issueDate: EditableField<"date">,
+    ? expiryDate: EditableField<"date">,
+    ? issuingAuthority: EditableField<"string">,
+}
+
+$Credential /= PersonName
+PersonName = {
+    type: "person-name",
+    ? title: EditableField<"string">,
+    ? given: EditableField<"string">,
+    ? givenInformal: EditableField<"string">,
+    ? given2: EditableField<"string">,
+    ? surnamePrefix: EditableField<"string">,
+    ? surname: EditableField<"string">,
+    ? surname2: EditableField<"string">,
+    ? credentials: EditableField<"string">,
+    ? generation: EditableField<"string">,
+}
+
+$Credential /= SSHKey
+SSHKey = {
+    type: "ssh-key",
+    keyType: tstr,
+    privateKey: b64url,
+    ? keyComment: tstr,
+    ? creationDate: EditableField<"date">,
+    ? expiryDate: EditableField<"date">,
+    ? keyGenerationSource: EditableField<"string">,
+}
+
+$Credential /= TOTP
+TOTP = {
+    type: "totp",
+    secret: tstr,
+    period: uint .size 2,
+    digits: uint .size 2,
+    ? username: tstr,
+    algorithm: OTPHashAlgorithm / tstr,
+    ? issuer: tstr,
+}
+
+OTPHashAlgorithm =
+    "sha1" /
+    "sha256" /
+    "sha512"
+
+$Credential /= WIFI
+WIFI = {
+    type: "wifi",
+    ? ssid: EditableField<"string">,
+    ? networkSecurityType: EditableField<"wifi-network-security-type"> /
+        EditableField<"string">,
+    ? passphrase: EditableField<"concealed-string">,
+    ? hidden: EditableField<"boolean">
+}
+
+WIFINetworkSecurityType = {
+    "unsecured" /
+    "wpa-personal" /
+    "wpa2-personal" /
+    "wpa3-personal" /
+    "wep"
+}
+
+CredentialType =
+    "address" /
+    "api-key" /
+    "basic-auth" /
+    "credit-card" /
+    "custom-fields"/
+    "drivers-license" /
+    "file" /
+    "generated-password" /
+    "identity-document" /
+    "item-reference" /
+    "note" /
+    "passkey" /
+    "passport" /
+    "person-name" /
+    "ssh-key" /
+    "totp" /
+    "wifi"
+
+EditableField<F> = {
+    ? id: b64url,
+    fieldType: F / tstr,
+    value: tstr,
+    ? label: tstr,
+    ? extensions: [ + Extension ] .default [],
+}
+
+FieldType =
+    "string" /
+    "concealed-string" /
+    "email" /
+    "number" /
+    "boolean" /
+    "date" /
+    "year-month" /
+    "wifi-network-security-type" /
+    "country-code" /
+    "subdivision-code"
+
+Extension = $Extension .within {
+    name: tstr
+    ; Should there be an included schema? or use a URI to define the schema?
+}
+
+$Extension /= Shared
+Shared = {
+    name: "shared",
+    accessors: [ * SharingAccessor ],
+}
+
+SharingAccessor = {
+    type: SharingAccessorType / tstr,
+    accountId: b64url,
+    name: tstr,
+    permissions: [ * SharingAccessorPermission / tstr ],
+}
+
+SharingAccessorType =
+    "user" /
+    "group"
+
+SharingAccessorPermission =
+    "read" /
+    "readSecret" /
+    "update" /
+    "create" /
+    "delete" /
+    "share" /
+    "manage"
+
+
