@@ -10,7 +10,8 @@
  * never drop content the kit doesn't understand.
  */
 
-import { isZipArchive, readArchive } from "./archive.js";
+import { isZipArchive, readArchive, type ArchiveLimits } from "./archive.js";
+import { decodeUtf8Strict } from "./bytes.js";
 import { CxfParseError } from "./diagnostics.js";
 import type { Header } from "./types.js";
 
@@ -24,18 +25,22 @@ export interface CxfDocument {
   source: "json" | "archive";
 }
 
+export interface ParseOptions {
+  /** Decompression caps for ZIP input (zip-bomb defense). */
+  archiveLimits?: ArchiveLimits | undefined;
+}
+
 /**
  * Parse a CXF export from a JSON string, JSON bytes, or ZIP archive bytes
- * (sniffed by magic number).
+ * (sniffed by magic number). Byte input must be valid UTF-8 (CXF1007).
  */
-export function parseCxf(input: string | Uint8Array): CxfDocument {
+export function parseCxf(input: string | Uint8Array, options: ParseOptions = {}): CxfDocument {
   if (typeof input !== "string" && isZipArchive(input)) {
-    const { indexJson, files } = readArchive(input);
+    const { indexJson, files } = readArchive(input, options.archiveLimits ?? {});
     return { header: parseHeaderJson(indexJson), files, source: "archive" };
   }
 
-  const text =
-    typeof input === "string" ? input : new TextDecoder("utf-8", { fatal: false }).decode(input);
+  const text = typeof input === "string" ? input : decodeUtf8Strict(input, "Input");
   return { header: parseHeaderJson(text), files: new Map(), source: "json" };
 }
 

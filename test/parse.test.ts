@@ -194,4 +194,43 @@ describe("unusable input", () => {
     const zipWithoutIndex = zipSync({ "readme.txt": new TextEncoder().encode("hi") });
     expect(codeOf(() => parseCxf(zipWithoutIndex))).toBe("CXF1004");
   });
+
+  it("rejects invalid UTF-8 instead of silently substituting U+FFFD", () => {
+    // 0xFF can never appear in UTF-8.
+    const badJson = new Uint8Array([0x7b, 0x22, 0xff, 0x22, 0x7d]);
+    expect(codeOf(() => parseCxf(badJson))).toBe("CXF1007");
+    const badIndex = zipSync({ "index.json": new Uint8Array([0xff, 0xfe, 0x00]) });
+    expect(codeOf(() => parseCxf(badIndex))).toBe("CXF1007");
+  });
+
+  it("enforces archive entry-count and decompressed-size limits", () => {
+    const index = new TextEncoder().encode(wrap([]));
+    const many = zipSync({
+      "index.json": index,
+      "documents/YQ": new Uint8Array(1),
+      "documents/Yg": new Uint8Array(1),
+      "documents/Yw": new Uint8Array(1),
+    });
+    expect(codeOf(() => parseCxf(many, { archiveLimits: { maxFiles: 2 } }))).toBe("CXF1006");
+    const big = zipSync({ "index.json": index, "documents/YQ": new Uint8Array(4096) });
+    expect(codeOf(() => parseCxf(big, { archiveLimits: { maxTotalBytes: 1024 } }))).toBe(
+      "CXF1006",
+    );
+    // Defaults let a normal export through.
+    expect(parseCxf(many).files.size).toBe(3);
+  });
+
+  it("rejects documents/ entry names outside the b64url alphabet (path traversal)", () => {
+    const index = new TextEncoder().encode(wrap([]));
+    for (const name of ["documents/../../evil", "documents/a/b", "documents/na+me"]) {
+      const zip = zipSync({ "index.json": index, [name]: new Uint8Array(1) });
+      expect(codeOf(() => parseCxf(zip)), name).toBe("CXF1008");
+    }
+  });
+
+  it("refuses to write archive entries with unsafe file ids", () => {
+    expect(() => writeArchive("{}", new Map([["../evil", new Uint8Array(1)]]))).toThrow(
+      /unsafe archive entry name/,
+    );
+  });
 });
