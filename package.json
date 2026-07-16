@@ -1,6 +1,6 @@
 {
   "name": "cxf-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Data models, parser, serializer, validator, and CLI for the FIDO Credential Exchange Format (CXF) v1.0",
   "type": "module",
   "license": "MIT",
@@ -15,7 +15,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "cxf": "./dist/cli.js"
+    "cxf": "dist/cli.js"
   },
   "files": [
     "dist",

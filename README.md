@@ -12,7 +12,7 @@ Node ≥ 18. One runtime dependency (`fflate`, for the ZIP archive form).
 
 ```
 npm install   # then:
-npm test      # 52 tests: guards, parser, round-trip, validator
+npm test      # 69 tests: guards, parser, round-trip, validator, spawned-CLI contract
 npm run cxf -- validate <file>
 ```
 
