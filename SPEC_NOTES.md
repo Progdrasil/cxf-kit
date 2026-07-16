@@ -62,7 +62,22 @@ names MUST be `EXPORTER_RP_ID/EXTENSION_NAME`.
 `SharedExtension` narrowing; validator warns when a non-registered extension name lacks the
 `RP_ID/NAME` shape. All extension content is round-trip preserved.
 
-## 10. ⚠ Fetch-summary hazard (process note, not spec)
+## 10. Revision cross-check: Review Draft 2025-03-13 vs Proposed Standard 2025-08-14
+Bitwarden's Rust library targets the RD; this kit targets the PS. Both revisions' CDDL was
+extracted and diffed (RD has no consolidated CDDL index, so its inline fragments were collected).
+**Result: zero breaking differences — the wire format is identical.** Every delta is an
+editorial typo fix in the spec text:
+- RD `$Credential =/ CustomFields` (inverted operator) → PS `/=`
+- RD `type = "drivers-license"` → PS `type:`
+- RD `CredentialType` enum missing the `/` after `"generated-password"` → PS adds it
+- WIFI `networkSecurityType` restated: RD `EditableField<"wifi-network-security-type" / "string">`
+  → PS `EditableField<"wifi-network-security-type"> / EditableField<"string">` (same JSON shape)
+
+All credential types, members, optionality, and enum values (incl. Shared/SharingAccessor) match.
+RD-targeted implementations (Bitwarden) and this kit should not disagree structurally. Neither
+revision contains a changelog section; this comparison is from the extracted CDDL itself.
+
+## 11. ⚠ Fetch-summary hazard (process note, not spec)
 Two independent LLM summaries of the spec both mis-stated `SharingAccessor`'s fields
 (claimed `identifier`/`createdDate`/`permission`); the real CDDL has
 `type`, `accountId`, `name`, `permissions[]`. All models here were built from the raw

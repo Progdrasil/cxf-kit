@@ -67,11 +67,17 @@ Additionally `serialize(parse(y)) === y` for already-canonical fixtures.
 
 1. ✅ PLAN.md + SPEC_NOTES.md (this commit)
 2. Data models (`src/types.ts`) → **STOP: show type definitions for review**
-3. Parser + archive reader, with fixtures
-4. Serializer + round-trip tests
-5. Validator
-6. CLI
-7. Polish: README, `npm pack` sanity check
+   (Pre-checked: RD 2025-03-13 vs PS 2025-08-14 CDDL is wire-identical — see SPEC_NOTES §10 —
+   so Bitwarden-RD interop imposes no type changes.)
+3. **Interop fixtures**: pull sample CXF exports from Bitwarden's `credential-exchange` repo
+   (RD-targeted) and any findable real-world Apple exporter output (iOS/macOS 26 ships CXF);
+   check them into `test/fixtures/interop/` with provenance notes. The parser must consume
+   them cleanly — interop with real implementations is the point of this library.
+4. Parser + archive reader, tested against synthetic + interop fixtures
+5. Serializer + round-trip tests (interop fixtures included in the round-trip suite)
+6. Validator (interop fixtures must produce no false-positive errors)
+7. CLI
+8. Polish: README, `npm pack` sanity check
 
 Commit after each working chunk. Any spec ambiguity → flag to Yusuf, log resolution in
 SPEC_NOTES.md.
