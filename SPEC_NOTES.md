@@ -21,8 +21,10 @@ but it's plainly meant as a string enum (every other enum uses bare alternation,
 `CustomFields.extensions` and `EditableField.extensions` use `+` (one-or-more) yet default to `[]`.
 Entity-level `extensions` (Account/Collection/Item) use `*` (zero-or-more). Contradictory: an
 empty array is simultaneously the default and disallowed.
-**Resolution:** serializer omits empty `extensions` everywhere; validator emits a **warning**
-(not error) if a present `extensions` array is empty on CustomFields/EditableField.
+**Resolution:** serializer omits empty `extensions` everywhere in `normalize: true` mode
+(default mode preserves them so round-trips stay value-identical — the spec's own Appendix A
+carries one, see §11); validator emits a **warning** (not error) if a present `extensions`
+array is empty on CustomFields/EditableField.
 
 ## 4. Open enums everywhere
 Every enum position is `KnownEnum / tstr`, and the spec's processing rules say: unknown value in
@@ -39,8 +41,9 @@ fields (keys, hashes, blobs) get validity-only checks.
 ## 6. Required-vs-optional empty arrays
 CDDL: required arrays (`accounts`, `items`, `credentials`, `urls`, `fields`, ...) may be present-empty;
 optional arrays carry `.default []`, and the prose says exporters omit them when empty.
-**Resolution:** serializer always emits required arrays (even empty) and omits optional arrays
-when empty; validator warns on present-but-empty optional arrays (style, not conformance error).
+**Resolution:** serializer always emits required arrays (even empty) and, in `normalize: true`
+mode, omits optional arrays when empty (default mode preserves input verbatim); validator warns
+on present-but-empty optional arrays (style, not conformance error).
 
 ## 7. `uint .size 8` timestamps vs JSON numbers
 Unix-seconds timestamps are 8-byte uints, but JS `number` is exact only to 2^53−1. Real
@@ -87,6 +90,10 @@ spec. Real-world exports modeled on the example may therefore carry this shape.
 members as **warnings**, not errors, so example-derived exports stay importable.
 Appendix A also omits `custom-fields` and `item-reference` despite claiming to include every
 credential type — covered instead by the Bitwarden and synthetic fixtures.
+Further example nonconformance found while building the round-trip suite: the drivers-license
+credential's `expiryDate` EditableField carries `"extensions": []` — present-but-empty, violating
+both the CDDL's `[ + Extension ]` and the exporter omission rule (§3/§6). This forced the
+serializer's default mode to be strictly preserving; normalization is opt-in.
 
 ## 12. ⚠ Fetch-summary hazard (process note, not spec)
 Two independent LLM summaries of the spec both mis-stated `SharingAccessor`'s fields

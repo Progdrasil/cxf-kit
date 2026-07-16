@@ -81,3 +81,15 @@ Additionally `serialize(parse(y)) === y` for already-canonical fixtures.
 
 Commit after each working chunk. Any spec ambiguity → flag to Yusuf, log resolution in
 SPEC_NOTES.md.
+
+## Post-v0.1 backlog (recorded 2026-07-16, not scheduled)
+
+1. **Upstream report to FIDO Alliance** about the Appendix A / CDDL contradiction
+   (`fido2Extensions.hmacSecret` vs `hmacCredentials`, SPEC_NOTES §11), once the
+   validator demonstrably handles both shapes. SPEC_NOTES §11 is the draft of that report.
+2. **Fuzz / property-based test pass** (after the validator exists): generate random
+   mutations of valid fixtures — dropped members, type-flipped values, truncated
+   b64url — and assert (a) the parser never throws anything but CxfParseError,
+   (b) every validator diagnostic carries a valid CXF#### code and a non-empty path.
+   The round-trip suite proves correctness on good input; fuzzing proves grace on
+   hostile input.
