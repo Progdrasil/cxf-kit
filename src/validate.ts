@@ -58,6 +58,17 @@ export interface ValidateOptions {
 }
 
 export function validateCxf(root: unknown, options: ValidateOptions = {}): Diagnostic[] {
+  // Footgun guard: passing the CxfDocument wrapper from parseCxf() instead of
+  // its .header would otherwise validate the wrapper as a Header and produce
+  // nonsense. A wrapper is unambiguous (a Map can never come from JSON.parse),
+  // so unwrap it — this keeps validateCxf(parseCxf(x)) and the CLI in
+  // agreement by construction.
+  if (isCxfDocument(root)) {
+    return validateCxf(root.header, {
+      files: options.files ?? root.files,
+      source: options.source ?? root.source,
+    });
+  }
   const ctx = new Ctx(options);
   if (!isObj(root)) {
     ctx.report("error", "CXF2020", "$", `A CXF document must be a JSON object, got ${kindOf(root)}.`);
@@ -69,6 +80,15 @@ export function validateCxf(root: unknown, options: ValidateOptions = {}): Diagn
 
 export function validateDocument(document: CxfDocument): Diagnostic[] {
   return validateCxf(document.header, { files: document.files, source: document.source });
+}
+
+function isCxfDocument(value: unknown): value is CxfDocument {
+  return (
+    isObj(value) &&
+    "header" in value &&
+    value["files"] instanceof Map &&
+    (value["source"] === "json" || value["source"] === "archive")
+  );
 }
 
 // ---------------------------------------------------------------------------

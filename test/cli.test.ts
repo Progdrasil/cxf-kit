@@ -59,6 +59,37 @@ describe("exit code 0: conforming documents", () => {
   });
 });
 
+describe("inspect redaction", () => {
+  const kitchen = join(FIXTURES, "synthetic", "kitchen-sink.json");
+
+  it("redacts concealed values and secret scalars by default", () => {
+    const res = run("inspect", kitchen);
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain("[redacted]");
+    expect(res.stdout).toContain("username: ada"); // non-concealed values shown
+    expect(res.stdout).not.toContain("hunter2"); // concealed-string
+    expect(res.stdout).not.toContain("JBSWY3DPEHPK3PXP"); // totp secret
+    expect(res.stdout).not.toContain("correct horse battery staple"); // generated password
+    expect(res.stdout).not.toContain("1234567890"); // unknown-credential string member
+  });
+
+  it("--no-redact reveals them", () => {
+    const res = run("inspect", kitchen, "--no-redact");
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain("hunter2");
+    expect(res.stdout).toContain("JBSWY3DPEHPK3PXP");
+    expect(res.stdout).not.toContain("[redacted]");
+  });
+
+  it("--json output respects the same redaction", () => {
+    const redacted = JSON.stringify(JSON.parse(run("inspect", kitchen, "--json").stdout));
+    expect(redacted).toContain("[redacted]");
+    expect(redacted).not.toContain("hunter2");
+    const revealed = JSON.stringify(JSON.parse(run("inspect", kitchen, "--json", "--no-redact").stdout));
+    expect(revealed).toContain("hunter2");
+  });
+});
+
 describe("exit code 1: validation errors", () => {
   it("a parseable document with conformance errors exits 1", () => {
     const file = tmpFile("invalid.json", JSON.stringify({

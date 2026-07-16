@@ -43,6 +43,11 @@ Design decisions that matter:
   extension bodies are preserved verbatim, never dropped. Runtime guards
   (`isKnownCredential`, `credentialOfType`, `isSharedExtension`) make the
   `Credential` union discriminable despite that openness.
+- **Library and CLI always agree.** `validateCxf` also accepts the
+  `CxfDocument` wrapper that `parseCxf` returns (detected unambiguously — a
+  `Map` can't come from `JSON.parse`) and unwraps it, so
+  `validateCxf(parseCxf(x))`, `validateCxf(parseCxf(x).header)`, and
+  `cxf validate x` all produce identical diagnostics.
 - **The parser is lossless and minimal; the validator owns every rule.**
   `parseCxf` decodes and gates only on unusable input (bad JSON/UTF-8/ZIP —
   `CxfParseError` with stable `CXF1xxx` codes). Conformance lives entirely in
@@ -74,7 +79,9 @@ example, a synthetic all-17-types fixture, and the ZIP archive form.
 ## CLI
 
 `cxf validate <file>` (exit 0 conforms / 1 errors / 2 unusable) and
-`cxf inspect <file>` (never prints credential values); both take `--json`.
+`cxf inspect <file>` (concealed values and key material redacted by default;
+`--no-redact` reveals them); both take `--json`. The exit-code contract is
+enforced by tests that spawn the built CLI as a real child process.
 Real output against the spec's own example payload:
 
 ```
@@ -128,6 +135,15 @@ test/fixtures/spec/appendix-a.json
       ssh-key             1
       totp                1
       wifi                1
+    Items:
+      - GitHub Login
+          basic-auth — username: johndoe, password: [redacted]
+          totp — secret: [redacted], period: 30, digits: 6, issuer: Google, algorithm: sha256, username: jane.smith@example.com
+      - WebAuthn.io
+          passkey — credentialId: Y3JlZGVudGlhbElkRXhhbXBsZQ, rpId: webauthn.io, username: johndoe, userDisplayName: John Doe, userHandle: cnEzaNHWcYK3coWZjvoaV1Hj9gnI12mKe2dL2HZVFlY, key: [redacted]
+      - Visa Credit Card
+          credit-card — number: [redacted], fullName: John Doe, cardType: Visa, verificationNumber: [redacted], pin: [redacted], expiryDate: 2027-08, validFrom: 2024-02
+      ... (11 more items; secrets always come back "[redacted]" unless --no-redact)
 ```
 
 ## Archive form and security notes

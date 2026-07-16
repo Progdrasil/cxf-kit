@@ -222,6 +222,25 @@ describe("mutations are caught with the right code, path, and severity", () => {
   }
 });
 
+describe("library and CLI surfaces agree", () => {
+  it("validateCxf accepts the CxfDocument wrapper and matches validateDocument", () => {
+    const text = readFileSync(join(FIXTURES, "spec", "appendix-a.json"), "utf-8");
+    const doc = parseCxf(text);
+    // The consumer footgun: passing parseCxf's result instead of .header.
+    expect(validateCxf(doc)).toEqual(validateDocument(doc));
+    expect(validateCxf(doc)).toEqual(validateCxf(doc.header));
+    expect(validateCxf(doc)).toHaveLength(5);
+  });
+
+  it("wrapper detection does not swallow a genuine document that merely has those member names", () => {
+    // files is a JSON array here, not a Map — must be validated as a Header, not unwrapped.
+    const impostor = { header: {}, files: [], source: "json" };
+    const diags = validateCxf(impostor);
+    expect(diags.some((d) => d.code === "CXF2001")).toBe(true);
+    expect(diags.some((d) => d.path === "$.header")).toBe(true);
+  });
+});
+
 describe("archive consistency", () => {
   const text = readFileSync(join(FIXTURES, "synthetic", "kitchen-sink.json"), "utf-8");
   const goodPayload = new TextEncoder().encode("recovery: 1111-2222-3333\n");
