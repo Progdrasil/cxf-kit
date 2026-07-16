@@ -77,7 +77,18 @@ All credential types, members, optionality, and enum values (incl. Shared/Sharin
 RD-targeted implementations (Bitwarden) and this kit should not disagree structurally. Neither
 revision contains a changelog section; this comparison is from the extracted CDDL itself.
 
-## 11. ⚠ Fetch-summary hazard (process note, not spec)
+## 11. Spec's own example contradicts its CDDL: `fido2Extensions.hmacSecret`
+Appendix A's passkey carries `fido2Extensions: { hmacSecret: { algorithm: "HS256", secret } }`.
+The CDDL defines no `hmacSecret` member — the equivalent is `hmacCredentials` with
+`algorithm ("hmac-sha256") / credWithUV / credWithoutUV`, and `"HS256"` appears nowhere in the
+spec. Real-world exports modeled on the example may therefore carry this shape.
+**Resolution:** kept verbatim in `test/fixtures/spec/appendix-a.json`; the parser preserves it
+(unknown members are never dropped) and the validator will flag unknown `Fido2Extensions`
+members as **warnings**, not errors, so example-derived exports stay importable.
+Appendix A also omits `custom-fields` and `item-reference` despite claiming to include every
+credential type — covered instead by the Bitwarden and synthetic fixtures.
+
+## 12. ⚠ Fetch-summary hazard (process note, not spec)
 Two independent LLM summaries of the spec both mis-stated `SharingAccessor`'s fields
 (claimed `identifier`/`createdDate`/`permission`); the real CDDL has
 `type`, `accountId`, `name`, `permissions[]`. All models here were built from the raw

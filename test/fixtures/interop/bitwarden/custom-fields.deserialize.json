@@ -1,0 +1,20 @@
+{
+    "fields": [
+        {
+            "fieldType": "string",
+            "value": "hello"
+        },
+        {
+            "fieldType": "concealed-string",
+            "value": "world"
+        },
+        {
+            "fieldType": "boolean",
+            "value": "false"
+        },
+        {
+            "fieldType": "year-month",
+            "value": "2025-02"
+        }
+    ]
+}

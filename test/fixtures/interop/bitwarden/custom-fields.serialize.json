@@ -1,0 +1,13 @@
+{
+    "fields": [
+        {
+            "id": "ZmllbGQx",
+            "fieldType": "string",
+            "value": "hello"
+        },
+        {
+            "fieldType": "boolean",
+            "value": "false"
+        }
+    ]
+}

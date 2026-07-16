@@ -1,0 +1,276 @@
+{
+  "version": { "major": 1, "minor": 0 },
+  "exporterRpId": "cxf-kit.example",
+  "exporterDisplayName": "cxf-kit synthetic fixture",
+  "timestamp": 1752624000,
+  "accounts": [
+    {
+      "id": "YWNjb3VudC1h",
+      "username": "ada",
+      "email": "ada@example.com",
+      "fullName": "Ada Lovelace",
+      "collections": [
+        {
+          "id": "Y29sbC13b3Jr",
+          "creationAt": 1752537600,
+          "modifiedAt": 1752624000,
+          "title": "Work",
+          "subtitle": "Shared with the team",
+          "items": [
+            { "item": "aXRlbS1sb2dpbg" },
+            { "item": "aXRlbS1zaGFyZWQ", "account": "YWNjb3VudC1i" }
+          ],
+          "subCollections": [
+            {
+              "id": "Y29sbC1pbmZyYQ",
+              "title": "Infrastructure",
+              "items": [{ "item": "aXRlbS1pbmZyYQ" }]
+            }
+          ],
+          "extensions": [
+            {
+              "name": "shared",
+              "accessors": [
+                {
+                  "type": "group",
+                  "accountId": "YWNjb3VudC1i",
+                  "name": "engineering",
+                  "permissions": ["read", "readSecret", "quantum-veto"]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": "aXRlbS1sb2dpbg",
+          "creationAt": 1752537600,
+          "modifiedAt": 1752624000,
+          "title": "Example Login",
+          "subtitle": "Everything account",
+          "favorite": true,
+          "scope": {
+            "urls": ["https://login.example.com", "https://sso.example.com"],
+            "androidApps": [
+              {
+                "bundleId": "com.example.app",
+                "certificate": {
+                  "fingerprint": "3q2-7w",
+                  "hashAlg": "sha256"
+                },
+                "name": "Example App"
+              }
+            ]
+          },
+          "credentials": [
+            {
+              "type": "basic-auth",
+              "username": { "fieldType": "string", "value": "ada" },
+              "password": { "fieldType": "concealed-string", "value": "hunter2" }
+            },
+            {
+              "type": "totp",
+              "secret": "JBSWY3DPEHPK3PXP",
+              "period": 30,
+              "digits": 6,
+              "algorithm": "sha3-512",
+              "username": "ada@example.com",
+              "issuer": "Example"
+            },
+            { "type": "generated-password", "password": "correct horse battery staple" },
+            {
+              "type": "api-key",
+              "key": { "fieldType": "concealed-string", "value": "sk-live-123" },
+              "keyType": { "fieldType": "string", "value": "bearer" },
+              "url": { "fieldType": "string", "value": "https://api.example.com" },
+              "validFrom": { "fieldType": "date", "value": "2026-01-01" },
+              "expiryDate": { "fieldType": "date", "value": "2027-01-01" }
+            }
+          ],
+          "tags": ["work", "primary"]
+        },
+        {
+          "id": "aXRlbS1wYXNza2V5",
+          "title": "webauthn.io passkey",
+          "credentials": [
+            {
+              "type": "passkey",
+              "credentialId": "Y3JlZC1pZA",
+              "rpId": "webauthn.io",
+              "username": "ada",
+              "userDisplayName": "Ada Lovelace",
+              "userHandle": "dXNlci1oYW5kbGU",
+              "key": "cGtjczgtZGVyLWJ5dGVz",
+              "fido2Extensions": {
+                "hmacCredentials": {
+                  "algorithm": "hmac-sha256",
+                  "credWithUV": "Y3JlZFdpdGhVVg",
+                  "credWithoutUV": "Y3JlZFdpdGhvdXRVVg"
+                },
+                "credBlob": "YmxvYg",
+                "largeBlob": { "uncompressedSize": 128, "data": "ZGVmbGF0ZWQ" },
+                "payments": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS1pZGVudGl0eQ",
+          "title": "Identity documents",
+          "credentials": [
+            {
+              "type": "identity-document",
+              "issuingCountry": { "fieldType": "country-code", "value": "GB" },
+              "documentNumber": { "fieldType": "string", "value": "ID-123456" },
+              "fullName": { "fieldType": "string", "value": "Ada Lovelace" },
+              "birthDate": { "fieldType": "date", "value": "1815-12-10" }
+            },
+            {
+              "type": "passport",
+              "issuingCountry": { "fieldType": "country-code", "value": "GB" },
+              "passportNumber": { "fieldType": "string", "value": "P-987654" },
+              "expiryDate": { "fieldType": "date", "value": "2030-06-01" }
+            },
+            {
+              "type": "drivers-license",
+              "licenseNumber": { "fieldType": "string", "value": "DL-555" },
+              "territory": { "fieldType": "subdivision-code", "value": "GB-LND" },
+              "licenseClass": { "fieldType": "string", "value": "B" }
+            },
+            {
+              "type": "person-name",
+              "given": { "fieldType": "string", "value": "Ada" },
+              "surname": { "fieldType": "string", "value": "Lovelace" },
+              "credentials": { "fieldType": "string", "value": "Countess" }
+            },
+            {
+              "type": "address",
+              "streetAddress": { "fieldType": "string", "value": "12 St James's Square" },
+              "city": { "fieldType": "string", "value": "London" },
+              "postalCode": { "fieldType": "string", "value": "SW1Y 4JH" },
+              "country": { "fieldType": "country-code", "value": "GB" },
+              "tel": { "fieldType": "string", "value": "+44 20 0000 0000" }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS1jYXJk",
+          "title": "Visa",
+          "credentials": [
+            {
+              "type": "credit-card",
+              "number": { "fieldType": "concealed-string", "value": "4111111111111111" },
+              "fullName": { "fieldType": "string", "value": "Ada Lovelace" },
+              "cardType": { "fieldType": "string", "value": "Visa" },
+              "verificationNumber": { "fieldType": "concealed-string", "value": "123" },
+              "expiryDate": { "fieldType": "year-month", "value": "2029-04" }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS1pbmZyYQ",
+          "title": "Infrastructure",
+          "credentials": [
+            {
+              "type": "ssh-key",
+              "keyType": "ssh-ed25519",
+              "privateKey": "cGtjczgtc3NoLWtleQ",
+              "keyComment": "deploy key",
+              "creationDate": { "fieldType": "date", "value": "2026-01-15" }
+            },
+            {
+              "type": "wifi",
+              "ssid": { "fieldType": "string", "value": "AnalyticalEngine" },
+              "networkSecurityType": {
+                "fieldType": "wifi-network-security-type",
+                "value": "wpa3-personal"
+              },
+              "passphrase": { "fieldType": "concealed-string", "value": "difference-engine" },
+              "hidden": { "fieldType": "boolean", "value": "true" }
+            },
+            {
+              "type": "note",
+              "content": { "fieldType": "string", "value": "Router is in the attic." }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS1maWxlcw",
+          "title": "Attachments",
+          "credentials": [
+            {
+              "type": "file",
+              "id": "ZG9jMQ",
+              "name": "recovery-codes.txt",
+              "decryptedSize": 25,
+              "integrityHash": "X6PDekr1NecTbm6we_7qkhc6t3P18676yiPtv0AAjyI"
+            },
+            {
+              "type": "custom-fields",
+              "id": "Y3VzdG9tLTE",
+              "label": "Extra fields",
+              "fields": [
+                {
+                  "fieldType": "totp-secret",
+                  "value": "GEZDGNBVGY3TQOJQ",
+                  "label": "Backup TOTP",
+                  "extensions": [
+                    { "name": "cxf-kit.example/FieldOrigin", "importedFrom": "legacy-vault" }
+                  ]
+                },
+                { "fieldType": "email", "value": "ada@example.com" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS1wb2ludGVy",
+          "title": "Pointer to shared server",
+          "credentials": [
+            {
+              "type": "item-reference",
+              "reference": { "item": "aXRlbS1zaGFyZWQ", "account": "YWNjb3VudC1i" }
+            }
+          ]
+        },
+        {
+          "id": "aXRlbS1teXN0ZXJ5",
+          "title": "Loyalty card",
+          "credentials": [
+            {
+              "type": "cxf-kit.example/loyalty-card",
+              "memberNumber": "1234567890",
+              "tier": { "level": 3, "name": "gold" }
+            }
+          ],
+          "extensions": [
+            { "name": "cxf-kit.example/ItemColor", "color": "#7b1fa2" }
+          ]
+        }
+      ],
+      "extensions": [
+        { "name": "cxf-kit.example/VaultMeta", "vaultName": "personal", "schemaHint": 2 }
+      ]
+    },
+    {
+      "id": "YWNjb3VudC1i",
+      "username": "grace",
+      "email": "grace@example.com",
+      "collections": [],
+      "items": [
+        {
+          "id": "aXRlbS1zaGFyZWQ",
+          "title": "Shared server",
+          "credentials": [
+            {
+              "type": "basic-auth",
+              "username": { "fieldType": "string", "value": "root" },
+              "password": { "fieldType": "concealed-string", "value": "cobol4ever" }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
