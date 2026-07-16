@@ -7,7 +7,7 @@
   "author": "Yusuf Mohammed <yusufmoh006p@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/USERNAME/cxf-kit.git"
+    "url": "git+https://github.com/ymohammed006/cxf-kit.git"
   },
   "engines": {
     "node": ">=18"
