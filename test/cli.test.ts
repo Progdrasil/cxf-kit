@@ -79,8 +79,9 @@ describe("inspect allowlist and --redact", () => {
     for (const flags of [[], ["--redact"], ["--json"], ["--json", "--redact"]]) {
       const res = run("inspect", kitchen, ...flags);
       expect(res.status).toBe(0);
+      const allOutput = res.stdout + res.stderr; // a leak on either stream is a leak
       for (const secret of SECRETS) {
-        expect(res.stdout, `flags=${flags.join(" ")} leaked ${secret}`).not.toContain(secret);
+        expect(allOutput, `flags=${flags.join(" ")} leaked ${secret}`).not.toContain(secret);
       }
     }
   });
