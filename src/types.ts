@@ -1,7 +1,7 @@
 /**
  * Data models for the FIDO Credential Exchange Format (CXF) v1.0,
- * Proposed Standard 2025-08-14. Each type mirrors the wire format 1:1;
- * the authoritative CDDL is vendored at spec/cxf-v1.0-ps-20250814.cddl.
+ * Proposed Standard with errata 2026-03-09. Each type mirrors the wire format 1:1;
+ * the authoritative CDDL is vendored at spec/cxf-v1.0-ps-errata-20260309.cddl.
  *
  * Naming follows the CDDL exactly (APIKey, TOTP, WIFI, ...) except
  * `File` -> `FileCredential`, which would otherwise shadow the global.

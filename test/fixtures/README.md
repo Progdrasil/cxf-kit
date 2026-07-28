@@ -9,6 +9,11 @@ Known deviation from the spec's own CDDL (see SPEC_NOTES.md): the passkey's
 the CDDL's `hmacCredentials` structure. Kept verbatim — real-world importers will meet
 payloads modeled on this example, and the parser must preserve it.
 
+## spec/appendix-a-errata.json
+Verbatim from **Appendix A: Example Payload** of the FIDO CXF v1.0 Proposed Standard with Errata
+(2026-09-03), https://fidoalliance.org/specs/cx/cxf-v1.0-ps-errata-20260309.html.
+Covers 15 of 17 credential types (no `custom-fields`, no `item-reference`).
+
 ## interop/bitwarden/
 JSON payloads extracted verbatim from test modules of
 https://github.com/bitwarden/credential-exchange (MIT license), commit

@@ -1,5 +1,5 @@
 ; CXF v1.0 CDDL Index — extracted verbatim from
-; https://fidoalliance.org/specs/cx/cxf-v1.0-ps-20250814.html (Proposed Standard, 2025-08-14)
+; https://fidoalliance.org/specs/cx/cxf-v1.0-ps-errata-20260309.html (Proposed Standard with Errata, 2026-03-09)
 
 b64url = tstr
 
@@ -360,5 +360,3 @@ SharingAccessorPermission =
     "delete" /
     "share" /
     "manage"
-
-

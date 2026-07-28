@@ -1,8 +1,8 @@
 # cxf-kit — Plan
 
 A toolkit for the FIDO **Credential Exchange Format (CXF) v1.0**, built against the
-**Proposed Standard of 2025-08-14** (`https://fidoalliance.org/specs/cx/cxf-v1.0-ps-20250814.html`).
-The spec's CDDL index is vendored verbatim at `spec/cxf-v1.0-ps-20250814.cddl` as the
+**Proposed Standard of 2026-03-09** (`https://fidoalliance.org/specs/cx/cxf-v1.0-ps-errata-20260309.html`).
+The spec's CDDL index is vendored verbatim at `spec/cxf-v1.0-ps-errata-20260309.cddl` as the
 ground truth for the data models and validator.
 
 ## Language & stack

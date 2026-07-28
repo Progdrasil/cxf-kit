@@ -2,9 +2,9 @@
 
 TypeScript data models, parser, serializer, validator, and CLI for the
 **FIDO Credential Exchange Format (CXF) v1.0** — built against the
-[Proposed Standard of 2025-08-14](https://fidoalliance.org/specs/cx/cxf-v1.0-ps-20250814.html),
+[Proposed Standard of 2026-03-09](https://fidoalliance.org/specs/cx/cxf-v1.0-ps-errata-20260309.html),
 whose CDDL index is vendored verbatim at
-[`spec/cxf-v1.0-ps-20250814.cddl`](spec/cxf-v1.0-ps-20250814.cddl) as the single
+[`spec/cxf-v1.0-ps-errata-20260309.cddl`](spec/cxf-v1.0-ps-errata-20260309.cddl) as the single
 source of truth. (The March 2025 Review Draft that Bitwarden's Rust library targets
 is wire-identical — see [SPEC_NOTES §10](SPEC_NOTES.md).)
 
@@ -89,29 +89,11 @@ spawn the built CLI as a real child process.
 Real output against the spec's own example payload:
 
 ```
-$ cxf validate test/fixtures/spec/appendix-a.json
-test/fixtures/spec/appendix-a.json: 0 error(s), 5 warning(s)
+$ cxf validate test/fixtures/spec/appendix-a-errata.json
+test/fixtures/spec/appendix-a-errata.json: 0 error(s), 0 warning(s)
 
-  warning CXF2003 at $.accounts[0].items[1].credentials[0].fido2Extensions.hmacSecret
-    Fido2Extensions has no "hmacSecret" member in CXF v1.0; importers will ignore it.
-
-  warning CXF2004 at $.accounts[0].items[3].credentials[0].networkSecurityType.value
-    "WPA2" is not a known value (known: unsecured, wpa-personal, wpa2-personal, wpa3-personal, wep); importers must ignore this member.
-
-  warning CXF2008 at $.accounts[0].items[5].credentials[0].territory.value
-    A "subdivision-code" value must be an ISO 3166-2 code like "US-CA", got "CA".
-
-  warning CXF2008 at $.accounts[0].items[6].credentials[0].territory.value
-    A "subdivision-code" value must be an ISO 3166-2 code like "US-CA", got "CA".
-
-  warning CXF2009 at $.accounts[0].items[7].credentials[0].expiryDate.extensions
-    EditableField has an empty extensions array; the CDDL requires this array to be non-empty when present.
-
-OK: document conforms to CXF v1.0 (5 warning(s)).
+OK: document conforms to CXF v1.0.
 ```
-
-Yes — every one of those warnings is the spec's example contradicting the spec's
-own rules. That's the point of the validator.
 
 ```
 $ cxf inspect test/fixtures/spec/appendix-a.json
